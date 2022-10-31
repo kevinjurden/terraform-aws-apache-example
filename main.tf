@@ -57,8 +57,16 @@ data "template_file" "user_data" {
   template = file("${abspath(path.module)}/userdata.yaml")
 }
 
+data "aws_subnets" "subnet_ids" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.main.id]
+  }
+}
+
 resource "aws_instance" "my_server" {
   ami                    = "ami-026b57f3c383c2eec"
+  subnet_id              = data.aws_subnets.subnet_ids.ids[0]
   instance_type          = var.instance_size
   key_name               = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.sg_test_server.id]
